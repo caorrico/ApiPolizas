@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/poliza_viewmodel.dart';
+import '../viewmodels/login_viewmodel.dart';
+import 'login_view.dart';
 
 class PolizaView extends StatelessWidget {
   final _valorController = TextEditingController();
@@ -19,7 +21,17 @@ class PolizaView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Crear Póliza", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.teal,
+        backgroundColor: Color(0xFF1565C0),
+        elevation: 0,
+        actions: [
+          Consumer<LoginViewModel>(
+            builder: (context, loginVM, _) => IconButton(
+              icon: Icon(Icons.logout, color: Colors.white),
+              onPressed: () => _showLogoutDialog(context, loginVM),
+              tooltip: 'Cerrar sesión',
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -72,7 +84,7 @@ class PolizaView extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   shape: StadiumBorder(),
                   padding: EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: Colors.teal,
+                  backgroundColor: Color(0xFF1565C0),
                 ),
                 onPressed: vm.calcularPoliza,
                 child: Text("CREAR PÓLIZA", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -81,8 +93,8 @@ class PolizaView extends StatelessWidget {
             SizedBox(height: 20),
 
             Text(
-              "Costo total: ${vm.costoTotal.toStringAsFixed(3)}",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+              "Costo total: \$${vm.costoTotal.toStringAsFixed(2)}",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1565C0)),
             )
           ],
         ),
@@ -111,7 +123,7 @@ class PolizaView extends StatelessWidget {
       value: value,
       groupValue: groupValue,
       onChanged: onChanged,
-      activeColor: Colors.teal,
+      activeColor: Color(0xFF1565C0),
     );
   }
 
@@ -121,6 +133,50 @@ class PolizaView extends StatelessWidget {
       case '23-55': return 'Mayor igual a 23 y menor a 55';
       default: return 'Mayor igual 55';
     }
+  }
+
+  void _showLogoutDialog(BuildContext context, LoginViewModel loginVM) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.logout, color: Color(0xFF1565C0)),
+              SizedBox(width: 10),
+              Text('Cerrar Sesión'),
+            ],
+          ),
+          content: Text('¿Estás seguro de que quieres cerrar sesión?'),
+          actions: [
+            TextButton(
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey[600])),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF1565C0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text('Cerrar Sesión', style: TextStyle(color: Colors.white)),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await loginVM.logout();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginView()),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
